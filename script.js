@@ -10,7 +10,8 @@
   const deckCard = document.getElementById("deckCard");
   const deckCountEl = document.getElementById("deckCount");
   const playPauseBtn = document.getElementById("playPauseBtn");
-  const revealBtn = document.getElementById("revealBtn");
+  const guessForm = document.getElementById("guessForm");
+  const yearInput = document.getElementById("yearInput");
   const nextBtn = document.getElementById("nextBtn");
   const restartBtn = document.getElementById("restartBtn");
   const statusEl = document.getElementById("status");
@@ -81,7 +82,8 @@
       '<div class="card-hint">Click to draw &amp; play</div>' +
       "</div>";
     playPauseBtn.hidden = true;
-    revealBtn.hidden = true;
+    guessForm.hidden = true;
+    yearInput.value = "";
     nextBtn.hidden = true;
     progressWrap.hidden = true;
     progressFill.style.width = "0%";
@@ -128,9 +130,11 @@
 
       playPauseBtn.hidden = false;
       setPlayPauseLabel(true);
-      revealBtn.hidden = false;
+      guessForm.hidden = false;
+      yearInput.value = "";
       progressWrap.hidden = false;
       startPlaybackTimers();
+      yearInput.focus();
     } catch (err) {
       setStatus("Couldn't play this track (" + err.message + "). Revealing card instead.");
       showRevealed();
@@ -168,15 +172,33 @@
     stopPlayback();
     state = "revealed";
     const song = current.song;
-    deckCard.className = "card revealed";
+
+    const rawGuess = yearInput.value.trim();
+    const guess = rawGuess === "" ? null : parseInt(rawGuess, 10);
+    const hasGuess = guess !== null && Number.isFinite(guess);
+    const correct = hasGuess && guess === song.year;
+
+    let verdictHtml = "";
+    if (hasGuess) {
+      verdictHtml = correct
+        ? '<div class="verdict correct">✔ Correct!</div>'
+        : '<div class="verdict wrong">✘ Not quite</div>';
+    }
+    const guessLineHtml = hasGuess
+      ? '<div class="reveal-guess">Your guess: ' + guess + (correct ? "" : " · off by " + Math.abs(guess - song.year) + (Math.abs(guess - song.year) === 1 ? " year" : " years")) + "</div>"
+      : "";
+
+    deckCard.className = "card revealed" + (hasGuess ? correct ? " correct" : " wrong" : "");
     deckCard.innerHTML =
       '<div class="card-inner">' +
+      verdictHtml +
       '<div class="reveal-year">' + song.year + "</div>" +
       '<div class="reveal-title">' + escapeHtml(song.title) + "</div>" +
       '<div class="reveal-artist">' + escapeHtml(song.artist) + "</div>" +
+      guessLineHtml +
       "</div>";
     playPauseBtn.hidden = true;
-    revealBtn.hidden = true;
+    guessForm.hidden = true;
     progressWrap.hidden = true;
     nextBtn.hidden = false;
   }
@@ -255,7 +277,10 @@
     if (state === "idle") drawCard();
   });
   playPauseBtn.addEventListener("click", togglePlayPause);
-  revealBtn.addEventListener("click", showRevealed);
+  guessForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    if (state === "playing") showRevealed();
+  });
   nextBtn.addEventListener("click", resetCardToBack);
   restartBtn.addEventListener("click", newGame);
 

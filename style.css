@@ -210,6 +210,16 @@ body {
   text-align: center;
 }
 
+.card.revealed.correct .card-inner {
+  border-color: #1ed760;
+  box-shadow: 0 0 24px rgba(30, 215, 96, 0.25);
+}
+
+.card.revealed.wrong .card-inner {
+  border-color: #ff5470;
+  box-shadow: 0 0 24px rgba(255, 84, 112, 0.25);
+}
+
 .reveal-year {
   font-size: 3.4rem;
   font-weight: 900;
@@ -235,6 +245,58 @@ body {
   gap: 12px;
   flex-wrap: wrap;
   justify-content: center;
+}
+
+.guess-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+}
+
+.year-input {
+  width: 140px;
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 700;
+  text-align: center;
+  padding: 12px 14px;
+  border-radius: 999px;
+  border: 2px solid rgba(255, 46, 147, 0.35);
+  background: var(--black-soft);
+  color: var(--text);
+}
+
+.year-input:focus {
+  outline: none;
+  border-color: var(--pink);
+}
+
+.year-input::-webkit-outer-spin-button,
+.year-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.verdict {
+  font-weight: 800;
+  font-size: 1.1rem;
+  padding: 4px 0;
+}
+
+.verdict.correct {
+  color: #1ed760;
+}
+
+.verdict.wrong {
+  color: #ff5470;
+}
+
+.reveal-guess {
+  color: var(--text-dim);
+  font-size: 0.85rem;
+  margin-top: 2px;
 }
 
 .btn {
