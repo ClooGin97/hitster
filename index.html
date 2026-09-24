@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Hitster Online</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <h1 class="logo">HITSTER</h1>
+    <p class="tagline">Guess the year. Trust your ears.</p>
+  </header>
+
+  <main class="game">
+    <div class="deck-info">
+      <span id="deckCount">40</span> cards left
+    </div>
+
+    <div class="card-stage" id="cardStage">
+      <div class="card back-card" id="deckCard">
+        <div class="card-inner">
+          <div class="disc"></div>
+          <div class="card-brand">HITSTER</div>
+          <div class="card-hint">Click to draw &amp; play</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="controls" id="controls">
+      <button id="playPauseBtn" class="btn btn-outline" hidden><span class="icon icon-play"></span>Play</button>
+      <button id="revealBtn" class="btn btn-primary" hidden>Reveal Answer</button>
+      <button id="nextBtn" class="btn btn-primary" hidden>Next Card →</button>
+    </div>
+
+    <div class="progress-wrap" id="progressWrap" hidden>
+      <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    </div>
+
+    <div class="status" id="status"></div>
+
+    <button id="restartBtn" class="btn btn-ghost" hidden>Reshuffle Deck</button>
+  </main>
+
+  <footer>
+    <p>Song data &amp; 30s previews via the iTunes Search API. Fan-made, for fun — not affiliated with Hitster.</p>
+  </footer>
+
+  <script src="songs.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>

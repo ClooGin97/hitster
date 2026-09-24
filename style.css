@@ -1,0 +1,309 @@
+:root {
+  --black: #0b0710;
+  --black-soft: #150e1e;
+  --purple: #6a1b9a;
+  --purple-deep: #3a0d5e;
+  --pink: #ff2e93;
+  --pink-soft: #ff7ac6;
+  --text: #f5eefb;
+  --text-dim: #b9a8c9;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+html, body {
+  margin: 0;
+  min-height: 100%;
+  background: radial-gradient(circle at 50% -10%, var(--purple-deep) 0%, var(--black) 55%);
+  color: var(--text);
+  font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  padding: 24px 16px 40px;
+}
+
+.topbar {
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+.logo {
+  font-size: 3rem;
+  letter-spacing: 0.12em;
+  margin: 0;
+  font-weight: 800;
+  background: linear-gradient(90deg, var(--pink), var(--purple));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: none;
+}
+
+.tagline {
+  color: var(--text-dim);
+  margin: 4px 0 0;
+  font-size: 0.95rem;
+  letter-spacing: 0.03em;
+}
+
+.game {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  width: 100%;
+  max-width: 420px;
+  margin-top: 12px;
+}
+
+.deck-info {
+  color: var(--text-dim);
+  font-size: 0.9rem;
+}
+
+#deckCount {
+  color: var(--pink-soft);
+  font-weight: 700;
+}
+
+.card-stage {
+  position: relative;
+  width: 260px;
+  height: 260px;
+  perspective: 1200px;
+}
+
+.card {
+  width: 100%;
+  height: 100%;
+  border-radius: 20px;
+  cursor: pointer;
+  user-select: none;
+  position: relative;
+  transition: transform 0.15s ease;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.55), 0 0 0 2px rgba(255,255,255,0.03) inset;
+}
+
+.card:active {
+  transform: scale(0.97);
+}
+
+.card.disabled {
+  cursor: default;
+  pointer-events: none;
+}
+
+.card-inner {
+  width: 100%;
+  height: 100%;
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  background: linear-gradient(145deg, var(--black-soft) 0%, #1c1024 60%, var(--purple-deep) 100%);
+  border: 2px solid rgba(255, 46, 147, 0.35);
+}
+
+.disc {
+  width: 74px;
+  height: 74px;
+  border-radius: 50%;
+  background: repeating-radial-gradient(circle, #1a1120 0 4px, #2a1832 4px 8px);
+  border: 3px solid var(--pink);
+  box-shadow: 0 0 18px rgba(255, 46, 147, 0.45);
+  position: relative;
+}
+
+.disc::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--purple);
+  transform: translate(-50%, -50%);
+}
+
+.card-brand {
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  font-size: 1.1rem;
+  background: linear-gradient(90deg, var(--pink), var(--pink-soft));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.card-hint {
+  color: var(--text-dim);
+  font-size: 0.8rem;
+}
+
+.card.playing .disc {
+  animation: spin 3s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.card.revealed .card-inner {
+  background: linear-gradient(145deg, var(--purple-deep) 0%, #250a3d 55%, var(--black) 100%);
+  border-color: var(--purple);
+  gap: 6px;
+  padding: 12px;
+  text-align: center;
+}
+
+.reveal-year {
+  font-size: 3.4rem;
+  font-weight: 900;
+  color: var(--pink);
+  line-height: 1;
+  text-shadow: 0 0 22px rgba(255, 46, 147, 0.55);
+}
+
+.reveal-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-top: 4px;
+}
+
+.reveal-artist {
+  font-size: 0.9rem;
+  color: var(--text-dim);
+}
+
+.controls {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.btn {
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 700;
+  padding: 12px 22px;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+  letter-spacing: 0.02em;
+  transition: transform 0.1s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+}
+
+.btn:active {
+  transform: scale(0.96);
+}
+
+.btn-primary {
+  background: linear-gradient(90deg, var(--pink), var(--purple));
+  color: white;
+  box-shadow: 0 6px 18px rgba(255, 46, 147, 0.35);
+}
+
+.btn-outline {
+  background: transparent;
+  color: var(--pink-soft);
+  border: 2px solid var(--pink-soft);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.icon {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+}
+
+.icon-play {
+  width: 0;
+  height: 0;
+  border-top: 7px solid transparent;
+  border-bottom: 7px solid transparent;
+  border-left: 11px solid var(--pink-soft);
+}
+
+.icon-pause {
+  width: 10px;
+  height: 14px;
+  border-left: 4px solid var(--pink-soft);
+  border-right: 4px solid var(--pink-soft);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-dim);
+  border: 1px solid rgba(255,255,255,0.15);
+  margin-top: 10px;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.progress-wrap {
+  width: 100%;
+  max-width: 260px;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.08);
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--pink), var(--purple));
+  transition: width 0.2s linear;
+}
+
+.status {
+  min-height: 1.2em;
+  color: var(--text-dim);
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+footer {
+  margin-top: auto;
+  padding-top: 30px;
+  color: rgba(245, 238, 251, 0.35);
+  font-size: 0.75rem;
+  text-align: center;
+  max-width: 460px;
+}
+
+@media (max-width: 360px) {
+  .card-stage {
+    width: 220px;
+    height: 220px;
+  }
+  .logo {
+    font-size: 2.4rem;
+  }
+}
