@@ -67,7 +67,8 @@ body {
   margin-top: 12px;
 }
 
-.login-screen {
+.login-screen,
+.setup-screen {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -79,9 +80,27 @@ body {
   border: 2px solid rgba(255, 46, 147, 0.35);
 }
 
-.login-screen h2 {
+.login-screen h2,
+.setup-screen h2 {
   margin: 0;
   font-size: 1.3rem;
+}
+
+.deck-size-select {
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 700;
+  text-align: center;
+  padding: 12px 18px;
+  border-radius: 999px;
+  border: 2px solid rgba(255, 46, 147, 0.35);
+  background: var(--black-soft);
+  color: var(--text);
+}
+
+.deck-size-select:focus {
+  outline: none;
+  border-color: var(--pink);
 }
 
 .login-copy {
@@ -104,11 +123,6 @@ body {
   align-items: center;
   gap: 18px;
   width: 100%;
-}
-
-.deck-info {
-  color: var(--text-dim);
-  font-size: 0.9rem;
 }
 
 .score-tally {
@@ -134,11 +148,6 @@ body {
 
 .score-timeout {
   color: var(--pink-soft);
-}
-
-#deckCount {
-  color: var(--pink-soft);
-  font-weight: 700;
 }
 
 .card-stage {
