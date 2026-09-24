@@ -271,7 +271,10 @@
   // ---------- Wiring ----------
 
   deckCard.addEventListener("click", () => {
-    if (state === "idle") drawCard();
+    if (state === "idle") {
+      SpotifyPlayer.activateElement();
+      drawCard();
+    }
   });
   playPauseBtn.addEventListener("click", togglePlayPause);
   guessForm.addEventListener("submit", (e) => {
