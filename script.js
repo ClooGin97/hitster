@@ -242,17 +242,9 @@
 
   function scheduleAutoStop(ms) {
     clearTimeout(autoStopTimer);
-    autoStopTimer = setTimeout(async () => {
-      clearInterval(progressInterval);
-      progressFill.style.width = "100%";
-      isPlaying = false;
-      deckCard.classList.remove("playing");
-      setPlayPauseLabel(false);
-      try {
-        await SpotifyPlayer.pause();
-      } catch (_) {
-        /* already stopped */
-      }
+    autoStopTimer = setTimeout(() => {
+      // Time's up: turn the card over automatically, whether or not a guess was entered.
+      if (state === "playing") showRevealed();
     }, Math.max(ms, 0));
   }
 
