@@ -2,13 +2,15 @@
   "use strict";
 
   const loginScreen = document.getElementById("loginScreen");
+  const setupScreen = document.getElementById("setupScreen");
   const deckScreen = document.getElementById("deckScreen");
   const loginBtn = document.getElementById("loginBtn");
   const loginStatus = document.getElementById("loginStatus");
   const logoutBtn = document.getElementById("logoutBtn");
+  const deckSizeSelect = document.getElementById("deckSizeSelect");
+  const startGameBtn = document.getElementById("startGameBtn");
 
   const deckCard = document.getElementById("deckCard");
-  const deckCountEl = document.getElementById("deckCount");
   const playPauseBtn = document.getElementById("playPauseBtn");
   const guessForm = document.getElementById("guessForm");
   const yearInput = document.getElementById("yearInput");
@@ -38,12 +40,20 @@
 
   function showLogin(message) {
     loginScreen.hidden = false;
+    setupScreen.hidden = true;
     deckScreen.hidden = true;
     loginStatus.textContent = message || "";
   }
 
+  function showSetup() {
+    loginScreen.hidden = true;
+    setupScreen.hidden = false;
+    deckScreen.hidden = true;
+  }
+
   function showDeck() {
     loginScreen.hidden = true;
+    setupScreen.hidden = true;
     deckScreen.hidden = false;
   }
 
@@ -58,9 +68,9 @@
     return a;
   }
 
-  function newGame() {
-    deck = shuffle(SONGS);
-    updateDeckCount();
+  function newGame(size) {
+    const count = size === "all" ? SONGS.length : Math.min(Number(size) || SONGS.length, SONGS.length);
+    deck = shuffle(SONGS).slice(0, count);
     resetCardToBack();
     setStatus("");
     restartBtn.hidden = true;
@@ -72,10 +82,6 @@
     scoreCorrectEl.textContent = score.correct;
     scoreWrongEl.textContent = score.wrong;
     scoreTimeoutEl.textContent = score.timeout;
-  }
-
-  function updateDeckCount() {
-    deckCountEl.textContent = deck.length;
   }
 
   function setStatus(msg) {
@@ -104,14 +110,13 @@
   async function drawCard() {
     if (state !== "idle") return;
     if (deck.length === 0) {
-      setStatus("That's the whole deck! Reshuffle to keep playing.");
+      setStatus("That's the whole round! Play again to pick a new deck size.");
       restartBtn.hidden = false;
       return;
     }
 
     state = "loading";
     const song = deck.pop();
-    updateDeckCount();
     current = { song, track: null };
 
     deckCard.className = "card back-card loading";
@@ -297,7 +302,7 @@
     if (state === "playing") showRevealed();
   });
   nextBtn.addEventListener("click", resetCardToBack);
-  restartBtn.addEventListener("click", newGame);
+  restartBtn.addEventListener("click", showSetup);
 
   loginBtn.addEventListener("click", () => {
     loginStatus.textContent = "Redirecting to Spotify…";
@@ -306,6 +311,10 @@
   logoutBtn.addEventListener("click", () => {
     SpotifyAuth.logout();
     window.location.reload();
+  });
+  startGameBtn.addEventListener("click", () => {
+    newGame(deckSizeSelect.value);
+    showDeck();
   });
 
   // ---------- Boot ----------
@@ -332,8 +341,10 @@
       return;
     }
 
-    showDeck();
-    newGame();
+    const allOption = deckSizeSelect.querySelector('option[value="all"]');
+    if (allOption) allOption.textContent = "All " + SONGS.length + " cards";
+
+    showSetup();
   }
 
   main();
