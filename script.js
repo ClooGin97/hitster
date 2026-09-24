@@ -1,6 +1,12 @@
 (function () {
   "use strict";
 
+  const loginScreen = document.getElementById("loginScreen");
+  const deckScreen = document.getElementById("deckScreen");
+  const loginBtn = document.getElementById("loginBtn");
+  const loginStatus = document.getElementById("loginStatus");
+  const logoutBtn = document.getElementById("logoutBtn");
+
   const deckCard = document.getElementById("deckCard");
   const deckCountEl = document.getElementById("deckCount");
   const playPauseBtn = document.getElementById("playPauseBtn");
@@ -11,11 +17,32 @@
   const progressWrap = document.getElementById("progressWrap");
   const progressFill = document.getElementById("progressFill");
 
+  const TRACK_MS = 30000;
+
   let deck = [];
-  let current = null; // { song, previewUrl }
-  let audio = null;
-  let state = "idle"; // idle -> loading -> playing/paused -> revealed
-  let jsonpCounter = 0;
+  let current = null; // { song, track }
+  let state = "idle"; // idle -> loading -> playing -> revealed
+  let isPlaying = false;
+
+  let progressInterval = null;
+  let autoStopTimer = null;
+  let elapsedMs = 0;
+  let segmentStart = null;
+
+  // ---------- Screen switching ----------
+
+  function showLogin(message) {
+    loginScreen.hidden = false;
+    deckScreen.hidden = true;
+    loginStatus.textContent = message || "";
+  }
+
+  function showDeck() {
+    loginScreen.hidden = true;
+    deckScreen.hidden = false;
+  }
+
+  // ---------- Deck / game flow ----------
 
   function shuffle(arr) {
     const a = arr.slice();
@@ -43,7 +70,7 @@
   }
 
   function resetCardToBack() {
-    stopAudio();
+    stopPlayback();
     current = null;
     state = "idle";
     deckCard.className = "card back-card";
@@ -60,58 +87,6 @@
     progressFill.style.width = "0%";
   }
 
-  function jsonp(url) {
-    return new Promise((resolve, reject) => {
-      const cbName = "hitsterCb" + Date.now() + jsonpCounter++;
-      const script = document.createElement("script");
-      let done = false;
-
-      const cleanup = () => {
-        delete window[cbName];
-        if (script.parentNode) script.parentNode.removeChild(script);
-      };
-
-      window[cbName] = (data) => {
-        done = true;
-        cleanup();
-        resolve(data);
-      };
-
-      script.src = url + (url.includes("?") ? "&" : "?") + "callback=" + cbName;
-      script.onerror = () => {
-        if (!done) {
-          cleanup();
-          reject(new Error("Network error contacting iTunes"));
-        }
-      };
-      document.body.appendChild(script);
-
-      setTimeout(() => {
-        if (!done) {
-          cleanup();
-          reject(new Error("Lookup timed out"));
-        }
-      }, 8000);
-    });
-  }
-
-  async function fetchPreview(song) {
-    const term = encodeURIComponent(song.artist + " " + song.title);
-    const url = "https://itunes.apple.com/search?term=" + term + "&entity=song&limit=5&country=US";
-    const data = await jsonp(url);
-    if (!data || !data.results || !data.results.length) return null;
-    const withPreview = data.results.find((r) => r.previewUrl);
-    return withPreview ? withPreview.previewUrl : null;
-  }
-
-  function stopAudio() {
-    if (audio) {
-      audio.pause();
-      audio.removeAttribute("src");
-      audio = null;
-    }
-  }
-
   async function drawCard() {
     if (state !== "idle") return;
     if (deck.length === 0) {
@@ -123,31 +98,24 @@
     state = "loading";
     const song = deck.pop();
     updateDeckCount();
-    current = { song, previewUrl: null };
+    current = { song, track: null };
 
     deckCard.className = "card back-card loading";
-    deckCard.querySelector(".card-hint") &&
-      (deckCard.querySelector(".card-hint").textContent = "Loading…");
-    setStatus("Finding the track…");
+    const hint = deckCard.querySelector(".card-hint");
+    if (hint) hint.textContent = "Loading…";
+    setStatus("Finding the track on Spotify…");
 
     try {
-      const previewUrl = await fetchPreview(song);
-      current.previewUrl = previewUrl;
-
-      if (!previewUrl) {
-        setStatus("No preview found for this track — revealing it so play can continue.");
+      const track = await SpotifyPlayer.searchTrack(song.title, song.artist);
+      if (!track) {
+        setStatus("Couldn't find this track on Spotify — revealing it so play can continue.");
         showRevealed();
         return;
       }
+      current.track = track;
 
-      audio = new Audio(previewUrl);
-      audio.addEventListener("timeupdate", updateProgress);
-      audio.addEventListener("ended", () => {
-        deckCard.classList.remove("playing");
-        setPlayPauseLabel(false);
-      });
-
-      await audio.play();
+      await SpotifyPlayer.playTrackUri(track.uri);
+      isPlaying = true;
       state = "playing";
       setStatus("");
       deckCard.className = "card playing";
@@ -162,39 +130,42 @@
       setPlayPauseLabel(true);
       revealBtn.hidden = false;
       progressWrap.hidden = false;
+      startPlaybackTimers();
     } catch (err) {
-      setStatus("Couldn't load audio (" + err.message + "). Revealing card instead.");
+      setStatus("Couldn't play this track (" + err.message + "). Revealing card instead.");
       showRevealed();
     }
   }
 
-  function updateProgress() {
-    if (!audio || !audio.duration) return;
-    const pct = (audio.currentTime / audio.duration) * 100;
-    progressFill.style.width = pct + "%";
-  }
-
-  function togglePlayPause() {
-    if (!audio) return;
-    if (audio.paused) {
-      audio.play();
-      deckCard.classList.add("playing");
-      setPlayPauseLabel(true);
-    } else {
-      audio.pause();
-      deckCard.classList.remove("playing");
-      setPlayPauseLabel(false);
+  async function togglePlayPause() {
+    if (state !== "playing" || !current || !current.track) return;
+    try {
+      if (isPlaying) {
+        await SpotifyPlayer.pause();
+        isPlaying = false;
+        deckCard.classList.remove("playing");
+        setPlayPauseLabel(false);
+        pausePlaybackTimers();
+      } else {
+        await SpotifyPlayer.resume();
+        isPlaying = true;
+        deckCard.classList.add("playing");
+        setPlayPauseLabel(true);
+        resumePlaybackTimers();
+      }
+    } catch (err) {
+      setStatus("Playback error: " + err.message);
     }
   }
 
-  function setPlayPauseLabel(isPlaying) {
-    playPauseBtn.innerHTML = isPlaying
+  function setPlayPauseLabel(playing) {
+    playPauseBtn.innerHTML = playing
       ? '<span class="icon icon-pause"></span>Pause'
       : '<span class="icon icon-play"></span>Play';
   }
 
   function showRevealed() {
-    stopAudio();
+    stopPlayback();
     state = "revealed";
     const song = current.song;
     deckCard.className = "card revealed";
@@ -216,17 +187,114 @@
     return div.innerHTML;
   }
 
-  function handleDeckClick() {
-    if (state === "idle") {
-      drawCard();
+  // ---------- Playback timers (30s cap + progress bar) ----------
+
+  function tickProgress() {
+    const elapsed = elapsedMs + (segmentStart ? Date.now() - segmentStart : 0);
+    progressFill.style.width = Math.min(elapsed / TRACK_MS, 1) * 100 + "%";
+  }
+
+  function startPlaybackTimers() {
+    elapsedMs = 0;
+    segmentStart = Date.now();
+    clearInterval(progressInterval);
+    progressInterval = setInterval(tickProgress, 200);
+    scheduleAutoStop(TRACK_MS);
+  }
+
+  function pausePlaybackTimers() {
+    if (segmentStart) {
+      elapsedMs += Date.now() - segmentStart;
+      segmentStart = null;
+    }
+    clearInterval(progressInterval);
+    clearTimeout(autoStopTimer);
+  }
+
+  function resumePlaybackTimers() {
+    segmentStart = Date.now();
+    clearInterval(progressInterval);
+    progressInterval = setInterval(tickProgress, 200);
+    scheduleAutoStop(TRACK_MS - elapsedMs);
+  }
+
+  function scheduleAutoStop(ms) {
+    clearTimeout(autoStopTimer);
+    autoStopTimer = setTimeout(async () => {
+      clearInterval(progressInterval);
+      progressFill.style.width = "100%";
+      isPlaying = false;
+      deckCard.classList.remove("playing");
+      setPlayPauseLabel(false);
+      try {
+        await SpotifyPlayer.pause();
+      } catch (_) {
+        /* already stopped */
+      }
+    }, Math.max(ms, 0));
+  }
+
+  function stopPlaybackTimers() {
+    clearInterval(progressInterval);
+    clearTimeout(autoStopTimer);
+    segmentStart = null;
+    elapsedMs = 0;
+  }
+
+  function stopPlayback() {
+    stopPlaybackTimers();
+    if (isPlaying) {
+      isPlaying = false;
+      SpotifyPlayer.pause().catch(() => {});
     }
   }
 
-  deckCard.addEventListener("click", handleDeckClick);
+  // ---------- Wiring ----------
+
+  deckCard.addEventListener("click", () => {
+    if (state === "idle") drawCard();
+  });
   playPauseBtn.addEventListener("click", togglePlayPause);
   revealBtn.addEventListener("click", showRevealed);
   nextBtn.addEventListener("click", resetCardToBack);
   restartBtn.addEventListener("click", newGame);
 
-  newGame();
+  loginBtn.addEventListener("click", () => {
+    loginStatus.textContent = "Redirecting to Spotify…";
+    SpotifyAuth.login().catch((err) => showLogin(err.message));
+  });
+  logoutBtn.addEventListener("click", () => {
+    SpotifyAuth.logout();
+    window.location.reload();
+  });
+
+  // ---------- Boot ----------
+
+  async function main() {
+    try {
+      await SpotifyAuth.handleRedirect();
+    } catch (err) {
+      showLogin(err.message);
+      return;
+    }
+
+    if (!SpotifyAuth.isLoggedIn()) {
+      showLogin("");
+      return;
+    }
+
+    showLogin("Connecting to Spotify…");
+    try {
+      await SpotifyPlayer.init();
+    } catch (err) {
+      SpotifyAuth.logout();
+      showLogin(err.message);
+      return;
+    }
+
+    showDeck();
+    newGame();
+  }
+
+  main();
 })();
