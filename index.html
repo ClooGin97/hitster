@@ -46,9 +46,21 @@
 
       <div class="controls" id="controls">
         <button id="playPauseBtn" class="btn btn-outline" hidden><span class="icon icon-play"></span>Play</button>
-        <button id="revealBtn" class="btn btn-primary" hidden>Reveal Answer</button>
         <button id="nextBtn" class="btn btn-primary" hidden>Next Card →</button>
       </div>
+
+      <form class="guess-row" id="guessForm" hidden>
+        <input
+          type="number"
+          id="yearInput"
+          class="year-input"
+          placeholder="Year, e.g. 1994"
+          inputmode="numeric"
+          min="1900"
+          max="2100"
+        />
+        <button type="submit" id="revealBtn" class="btn btn-primary">Submit Guess</button>
+      </form>
 
       <div class="progress-wrap" id="progressWrap" hidden>
         <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
