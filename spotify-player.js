@@ -106,5 +106,15 @@ const SpotifyPlayer = (() => {
     if (player) player.addListener("player_state_changed", handler);
   }
 
-  return { init, searchTrack, playTrackUri, pause, resume, togglePlay, onStateChanged };
+  // Must be called synchronously inside a real click/tap handler (before any
+  // await) — on mobile browsers this is what unlocks audio output for the
+  // SDK's playback element. Calling /play afterwards via the Web API is
+  // otherwise treated as unrequested autoplay and silently blocked.
+  function activateElement() {
+    if (player && typeof player.activateElement === "function") {
+      player.activateElement();
+    }
+  }
+
+  return { init, searchTrack, playTrackUri, pause, resume, togglePlay, onStateChanged, activateElement };
 })();
