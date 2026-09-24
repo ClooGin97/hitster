@@ -168,27 +168,32 @@
       : '<span class="icon icon-play"></span>Play';
   }
 
-  function showRevealed() {
+  function showRevealed(timedOut) {
     stopPlayback();
     state = "revealed";
     const song = current.song;
 
     const rawGuess = yearInput.value.trim();
     const guess = rawGuess === "" ? null : parseInt(rawGuess, 10);
-    const hasGuess = guess !== null && Number.isFinite(guess);
+    // A guess typed but never submitted before time ran out doesn't count.
+    const hasGuess = !timedOut && guess !== null && Number.isFinite(guess);
     const correct = hasGuess && guess === song.year;
 
     let verdictHtml = "";
-    if (hasGuess) {
+    let verdictClass = "";
+    if (timedOut) {
+      verdictHtml = '<div class="verdict timeout">⏰ Too late!</div>';
+    } else if (hasGuess) {
       verdictHtml = correct
         ? '<div class="verdict correct">✔ Correct!</div>'
         : '<div class="verdict wrong">✘ Not quite</div>';
+      verdictClass = correct ? " correct" : " wrong";
     }
     const guessLineHtml = hasGuess
       ? '<div class="reveal-guess">Your guess: ' + guess + (correct ? "" : " · off by " + Math.abs(guess - song.year) + (Math.abs(guess - song.year) === 1 ? " year" : " years")) + "</div>"
       : "";
 
-    deckCard.className = "card revealed" + (hasGuess ? correct ? " correct" : " wrong" : "");
+    deckCard.className = "card revealed" + verdictClass;
     deckCard.innerHTML =
       '<div class="card-inner">' +
       verdictHtml +
@@ -244,7 +249,7 @@
     clearTimeout(autoStopTimer);
     autoStopTimer = setTimeout(() => {
       // Time's up: turn the card over automatically, whether or not a guess was entered.
-      if (state === "playing") showRevealed();
+      if (state === "playing") showRevealed(true);
     }, Math.max(ms, 0));
   }
 

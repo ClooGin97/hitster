@@ -293,6 +293,10 @@ body {
   color: #ff5470;
 }
 
+.verdict.timeout {
+  color: var(--pink-soft);
+}
+
 .reveal-guess {
   color: var(--text-dim);
   font-size: 0.85rem;
