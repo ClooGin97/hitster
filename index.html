@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Hitster Online</title>
-<link rel="stylesheet" href="style.css?v=7" />
+<link rel="stylesheet" href="style.css?v=8" />
 </head>
 <body>
   <header class="topbar">
@@ -32,6 +32,12 @@
     <section class="deck-screen" id="deckScreen" hidden>
       <div class="deck-info">
         <span id="deckCount">40</span> cards left
+      </div>
+
+      <div class="score-tally" id="scoreTally">
+        <span class="score-item score-correct">✔ <span id="scoreCorrect">0</span></span>
+        <span class="score-item score-wrong">✘ <span id="scoreWrong">0</span></span>
+        <span class="score-item score-timeout">⏰ <span id="scoreTimeout">0</span></span>
       </div>
 
       <div class="card-stage" id="cardStage">
@@ -78,10 +84,10 @@
     <p>Playback via your own Spotify account (Premium required). Fan-made, for fun — not affiliated with Hitster or Spotify.</p>
   </footer>
 
-  <script src="songs.js?v=7"></script>
-  <script src="config.js?v=7"></script>
-  <script src="spotify-auth.js?v=7"></script>
-  <script src="spotify-player.js?v=7"></script>
-  <script src="script.js?v=7"></script>
+  <script src="songs.js?v=8"></script>
+  <script src="config.js?v=8"></script>
+  <script src="spotify-auth.js?v=8"></script>
+  <script src="spotify-player.js?v=8"></script>
+  <script src="script.js?v=8"></script>
 </body>
 </html>

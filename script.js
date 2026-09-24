@@ -17,6 +17,9 @@
   const statusEl = document.getElementById("status");
   const progressWrap = document.getElementById("progressWrap");
   const progressFill = document.getElementById("progressFill");
+  const scoreCorrectEl = document.getElementById("scoreCorrect");
+  const scoreWrongEl = document.getElementById("scoreWrong");
+  const scoreTimeoutEl = document.getElementById("scoreTimeout");
 
   const TRACK_MS = 30000;
 
@@ -24,6 +27,7 @@
   let current = null; // { song, track }
   let state = "idle"; // idle -> loading -> playing -> revealed
   let isPlaying = false;
+  let score = { correct: 0, wrong: 0, timeout: 0 };
 
   let progressInterval = null;
   let autoStopTimer = null;
@@ -60,6 +64,14 @@
     resetCardToBack();
     setStatus("");
     restartBtn.hidden = true;
+    score = { correct: 0, wrong: 0, timeout: 0 };
+    updateScoreTally();
+  }
+
+  function updateScoreTally() {
+    scoreCorrectEl.textContent = score.correct;
+    scoreWrongEl.textContent = score.wrong;
+    scoreTimeoutEl.textContent = score.timeout;
   }
 
   function updateDeckCount() {
@@ -183,12 +195,15 @@
     let verdictClass = "";
     if (timedOut) {
       verdictHtml = '<div class="verdict timeout">⏰ Too late!</div>';
+      score.timeout++;
     } else if (hasGuess) {
       verdictHtml = correct
         ? '<div class="verdict correct">✔ Correct!</div>'
         : '<div class="verdict wrong">✘ Not quite</div>';
       verdictClass = correct ? " correct" : " wrong";
+      score[correct ? "correct" : "wrong"]++;
     }
+    updateScoreTally();
     const guessLineHtml = hasGuess
       ? '<div class="reveal-guess">Your guess: ' + guess + (correct ? "" : " · off by " + Math.abs(guess - song.year) + (Math.abs(guess - song.year) === 1 ? " year" : " years")) + "</div>"
       : "";

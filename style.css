@@ -111,6 +111,31 @@ body {
   font-size: 0.9rem;
 }
 
+.score-tally {
+  display: flex;
+  gap: 16px;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.score-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.score-correct {
+  color: #1ed760;
+}
+
+.score-wrong {
+  color: #ff5470;
+}
+
+.score-timeout {
+  color: var(--pink-soft);
+}
+
 #deckCount {
   color: var(--pink-soft);
   font-weight: 700;
